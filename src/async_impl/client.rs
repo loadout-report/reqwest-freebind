@@ -118,6 +118,8 @@ struct Config {
     http2_keep_alive_interval: Option<Duration>,
     http2_keep_alive_timeout: Option<Duration>,
     http2_keep_alive_while_idle: bool,
+    #[cfg(any(target_os = "android", target_os = "linux"))]
+    freebind: bool,
     local_address: Option<IpAddr>,
     nodelay: bool,
     #[cfg(feature = "cookies")]
