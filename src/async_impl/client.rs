@@ -189,6 +189,8 @@ impl ClientBuilder {
                 http2_keep_alive_interval: None,
                 http2_keep_alive_timeout: None,
                 http2_keep_alive_while_idle: false,
+                #[cfg(any(target_os = "android", target_os = "linux"))]
+                freebind: false,
                 local_address: None,
                 nodelay: true,
                 trust_dns: cfg!(feature = "trust-dns"),
@@ -243,6 +245,11 @@ impl ClientBuilder {
                 ));
             }
             let http = HttpConnector::new_with_resolver(DynResolver::new(resolver));
+
+            #[cfg(any(target_os = "android", target_os = "linux"))]
+            if config.freebind {
+                http.set_freebind(true);
+            }
 
             #[cfg(feature = "__tls")]
             match config.tls {
@@ -1024,6 +1031,14 @@ impl ClientBuilder {
         T: Into<Option<IpAddr>>,
     {
         self.config.local_address = addr.into();
+        self
+    }
+
+    /// Set the IP_FREEBIND or IPV6_FREEBIND socket option.
+    /// This allows binding to an address that is not configured on the local system.
+    #[cfg(any(target_os = "android", target_os = "linux"))]
+    pub fn freebind(mut self, enabled: bool) -> ClientBuilder {
+        self.config.freebind = enabled;
         self
     }
 
