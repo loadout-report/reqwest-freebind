@@ -246,12 +246,19 @@ impl ClientBuilder {
                     config.dns_overrides,
                 ));
             }
+
+
+            #[cfg(not(any(target_os = "android", target_os = "linux")))]
             let http = HttpConnector::new_with_resolver(DynResolver::new(resolver));
 
             #[cfg(any(target_os = "android", target_os = "linux"))]
-            if config.freebind {
-                http.set_freebind(true);
-            }
+            let http = {
+                let mut http = HttpConnector::new_with_resolver(DynResolver::new(resolver));
+                if config.freebind {
+                    http.set_freebind(true);
+                }
+                http
+            };
 
             #[cfg(feature = "__tls")]
             match config.tls {
